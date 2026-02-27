@@ -1,0 +1,32 @@
+class Solution:
+    def closedIsland(self, grid: List[List[int]]) -> int:
+
+        r, c = len(grid), len(grid[0])
+        for i in range(r):
+            for j in range(c):
+                if i == 0 or i == r-1 or j == 0 or j == c-1:
+                    self.dfs(grid, i, j, r, c)
+
+
+        islands = 0
+
+        for i in range(r):
+            for j in range(c):
+
+                if grid[i][j]==0:
+                    islands+=1
+
+                    self.dfs(grid, i, j, r, c)
+
+        return islands
+
+    def dfs(self, grid, i, j, r, c):
+        if i < 0 or i >= r or j < 0 or j >= c or grid[i][j]==1:
+            return
+
+        grid[i][j] = 1
+
+        self.dfs(grid, i+1, j, r, c)
+        self.dfs(grid, i-1, j, r, c)
+        self.dfs(grid, i, j+1, r, c)
+        self.dfs(grid, i, j-1, r, c)
