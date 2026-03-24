@@ -1,39 +1,36 @@
-from collections import deque, defaultdict
+from collections import deque
+from typing import List
 
 class Solution:
     def countOfPairs(self, n: int, x: int, y: int) -> List[int]:
         
-        gr = [[float('inf') for j in range(n + 1)] for i in range(n + 1)]
+        graph = {i: [] for i in range(1, n+1)}
 
-        for i in range(2, n+1):
-            j = i-1
-            gr[j][j] = 0
-            gr[i][i] = 0
+        # line connections
+        for i in range(1, n):
+            graph[i].append(i+1)
+            graph[i+1].append(i)
 
-            gr[i][j] = 1
-            gr[j][i] = 1
+        # extra connection
+        graph[x].append(y)
+        graph[y].append(x)
 
-        if x != y:
-            gr[x][y] = 1
-            gr[y][x] = 1
+        ans = [0]*(n+1)
 
-        # Floyd-Warshall algorithm
-        for k in range(1, n+1):
-            for i in range(1, n+1):
-                for j in range(1, n+1):
-                    gr[i][j] = min(gr[i][j], gr[i][k] + gr[k][j])
-
-        # Use defaultdict to auto-initialize missing keys to 0
-        freq = defaultdict(int)
-        
+        # BFS from each node
         for i in range(1, n+1):
-            for j in range(1, n+1):
-                freq[gr[i][j]] += 1
+            q = deque()
+            visited = set()
+            q.append((i, 0))
+            visited.add(i)
 
-        result = [0] * n
+            while q:
+                curr, dist = q.popleft()
 
-        for i in range(1, n+1):
-            if i in freq:
-                result[i-1] = freq[i]
+                for neighbor in graph[curr]:
+                    if neighbor not in visited:
+                        visited.add(neighbor)
+                        q.append((neighbor, dist+1))
+                        ans[dist+1] += 1
 
-        return result
+        return ans[1:]
