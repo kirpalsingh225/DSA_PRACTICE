@@ -1,31 +1,46 @@
+from collections import deque, defaultdict
 from typing import List
-from collections import deque
 
 class Solution:
     def largestPathValue(self, colors: str, edges: List[List[int]]) -> int:
+        
         n = len(colors)
-        indegrees = [0] * n
-        graph = [[] for _ in range(n)]
-        for edge in edges:
-            graph[edge[0]].append(edge[1])
-            indegrees[edge[1]] += 1
-        zero_indegree = deque()
+        graph = defaultdict(list)
+        indegree = [0] * n
+
+        for u, v in edges:
+            graph[u].append(v)
+            indegree[v] += 1
+
+        q = deque()
+        t = [[0] * 26 for _ in range(n)]
+
+        # initialize
         for i in range(n):
-            if indegrees[i] == 0:
-                zero_indegree.append(i)
-        counts = [[0]*26 for _ in range(n)]
-        for i in range(n):
-            counts[i][ord(colors[i]) - ord('a')] += 1
-        max_count = 0
-        visited = 0
-        while zero_indegree:
-            u = zero_indegree.popleft()
-            visited += 1
-            for v in graph[u]:
+            if indegree[i] == 0:
+                q.append(i)
+                t[i][ord(colors[i]) - ord('a')] = 1
+
+        answer = 0
+        countNodes = 0
+
+        while q:
+            curr = q.popleft()
+            countNodes += 1
+
+            answer = max(answer, t[curr][ord(colors[curr]) - ord('a')])
+
+            for v in graph[curr]:
                 for i in range(26):
-                    counts[v][i] = max(counts[v][i], counts[u][i] + (ord(colors[v]) - ord('a') == i))
-                indegrees[v] -= 1
-                if indegrees[v] == 0:
-                    zero_indegree.append(v)
-            max_count = max(max_count, max(counts[u]))
-        return max_count if visited == n else -1
+                    add = 1 if i == ord(colors[v]) - ord('a') else 0
+                    t[v][i] = max(t[v][i], t[curr][i] + add)
+
+                indegree[v] -= 1
+                if indegree[v] == 0:
+                    q.append(v)
+
+        # cycle check
+        if countNodes < n:
+            return -1
+
+        return answer
